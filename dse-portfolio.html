@@ -1,0 +1,1482 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>DSE Portfolio Management Platform</title>
+
+    <!-- Chart.js for visualizations -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js">
+    </script>
+
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+
+    <style>
+        /* ===== CSS Variables / Theme ===== */
+        :root {
+            --primary: #1a237e;
+            --primary-light: #3949ab;
+            --secondary: #0d47a1;
+            --accent: #00bcd4;
+            --success: #43a047;
+            --warning: #fb8c00;
+            --danger: #e53935;
+            --bg: #f5f7fa;
+            --card-bg: #ffffff;
+            --text: #1a1a2e;
+            --text-light: #6b7280;
+            --shadow: 0 4px 24px rgba(0, 0, 0, 0.08);
+            --radius: 16px;
+            --transition: all 0.3s ease;
+        }
+
+        /* ===== Reset & Base ===== */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+        }
+
+        /* ===== Navigation ===== */
+        .navbar {
+            background: var(--primary);
+            color: white;
+            padding: 0 2rem;
+            height: 70px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            box-shadow: 0 2px 16px rgba(0, 0, 0, 0.15);
+        }
+
+        .navbar .logo {
+            font-size: 1.5rem;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+        }
+
+        .navbar .logo i {
+            color: var(--accent);
+            margin-right: 10px;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 0.5rem;
+            list-style: none;
+        }
+
+        .nav-links button {
+            background: transparent;
+            border: none;
+            color: rgba(255, 255, 255, 0.7);
+            padding: 0.6rem 1.4rem;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: var(--transition);
+            font-family: 'Inter', sans-serif;
+        }
+
+        .nav-links button:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+        }
+
+        .nav-links button.active {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+        }
+
+        .nav-links button i {
+            margin-right: 8px;
+        }
+
+        /* ===== Main Container ===== */
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        /* ===== Pages (hidden by default) ===== */
+        .page {
+            display: none;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .page.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* ===== Cards ===== */
+        .card {
+            background: var(--card-bg);
+            border-radius: var(--radius);
+            padding: 1.5rem;
+            box-shadow: var(--shadow);
+            margin-bottom: 1.5rem;
+        }
+
+        .card h2 {
+            font-size: 1.25rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .card h2 i {
+            color: var(--primary-light);
+        }
+
+        /* ===== Grid Layouts ===== */
+        .grid-2 {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .grid-3 {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+        }
+
+        /* ===== Stats Cards ===== */
+        .stat-card {
+            background: var(--card-bg);
+            border-radius: var(--radius);
+            padding: 1.5rem;
+            box-shadow: var(--shadow);
+            border-left: 4px solid var(--primary);
+        }
+
+        .stat-card .label {
+            font-size: 0.8rem;
+            color: var(--text-light);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-weight: 600;
+        }
+
+        .stat-card .value {
+            font-size: 2rem;
+            font-weight: 800;
+            margin: 0.25rem 0;
+        }
+
+        .stat-card .change {
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+
+        .stat-card .change.positive {
+            color: var(--success);
+        }
+        .stat-card .change.negative {
+            color: var(--danger);
+        }
+
+        /* ===== Forms ===== */
+        .form-group {
+            margin-bottom: 1.25rem;
+        }
+
+        .form-group label {
+            display: block;
+            font-weight: 600;
+            font-size: 0.9rem;
+            margin-bottom: 0.4rem;
+            color: var(--text);
+        }
+
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 0.7rem 1rem;
+            border: 2px solid #e5e7eb;
+            border-radius: 10px;
+            font-size: 0.95rem;
+            font-family: 'Inter', sans-serif;
+            transition: var(--transition);
+            background: #fafafa;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: var(--primary-light);
+            box-shadow: 0 0 0 4px rgba(57, 73, 171, 0.1);
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+
+        /* ===== Buttons ===== */
+        .btn {
+            padding: 0.7rem 1.5rem;
+            border: none;
+            border-radius: 10px;
+            font-weight: 600;
+            font-size: 0.95rem;
+            cursor: pointer;
+            transition: var(--transition);
+            font-family: 'Inter', sans-serif;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: var(--primary-light);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(26, 35, 126, 0.3);
+        }
+
+        .btn-success {
+            background: var(--success);
+            color: white;
+        }
+        .btn-success:hover {
+            background: #2e7d32;
+        }
+
+        .btn-danger {
+            background: var(--danger);
+            color: white;
+        }
+        .btn-danger:hover {
+            background: #c62828;
+        }
+
+        .btn-outline {
+            background: transparent;
+            border: 2px solid #e5e7eb;
+            color: var(--text);
+        }
+
+        .btn-outline:hover {
+            border-color: var(--primary);
+            color: var(--primary);
+        }
+
+        /* ===== Tables ===== */
+        .table-wrapper {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        table th {
+            background: #f8fafc;
+            font-weight: 600;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--text-light);
+            padding: 0.75rem 1rem;
+            text-align: left;
+            border-bottom: 2px solid #e5e7eb;
+        }
+
+        table td {
+            padding: 0.75rem 1rem;
+            border-bottom: 1px solid #f1f5f9;
+        }
+
+        table tr:hover {
+            background: #fafafa;
+        }
+
+        /* ===== MOAT Checklist ===== */
+        .moat-section {
+            margin-bottom: 2rem;
+            border: 1px solid #e5e7eb;
+            border-radius: var(--radius);
+            overflow: hidden;
+        }
+
+        .moat-section-header {
+            background: #f8fafc;
+            padding: 1rem 1.5rem;
+            font-weight: 700;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: var(--transition);
+        }
+
+        .moat-section-header:hover {
+            background: #f1f5f9;
+        }
+
+        .moat-section-body {
+            padding: 1.5rem;
+            display: none;
+        }
+
+        .moat-section-body.open {
+            display: block;
+        }
+
+        .checkbox-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            padding: 0.5rem 0;
+            border-bottom: 1px solid #f1f5f9;
+        }
+
+        .checkbox-item:last-child {
+            border-bottom: none;
+        }
+
+        .checkbox-item input[type="checkbox"] {
+            margin-top: 4px;
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+            accent-color: var(--primary);
+        }
+
+        .checkbox-item label {
+            cursor: pointer;
+            font-size: 0.95rem;
+        }
+
+        .checkbox-item .sub-text {
+            color: var(--text-light);
+            font-size: 0.85rem;
+            display: block;
+        }
+
+        /* ===== Score Badges ===== */
+        .score-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 0.3rem 1rem;
+            border-radius: 20px;
+            font-weight: 700;
+            font-size: 0.9rem;
+        }
+
+        .score-excellent {
+            background: #e8f5e9;
+            color: #2e7d32;
+        }
+        .score-good {
+            background: #e3f2fd;
+            color: #0d47a1;
+        }
+        .score-average {
+            background: #fff3e0;
+            color: #e65100;
+        }
+        .score-poor {
+            background: #ffebee;
+            color: #c62828;
+        }
+
+        /* ===== Responsive ===== */
+        @media (max-width: 768px) {
+            .navbar {
+                flex-direction: column;
+                height: auto;
+                padding: 1rem;
+                gap: 0.5rem;
+            }
+
+            .nav-links {
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+
+            .nav-links button {
+                font-size: 0.8rem;
+                padding: 0.4rem 0.8rem;
+            }
+
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+
+            .container {
+                padding: 1rem;
+            }
+
+            .grid-2,
+            .grid-3 {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ===== NAVIGATION ===== -->
+    <nav class="navbar">
+        <div class="logo">
+            <i class="fas fa-chart-pie"></i>
+            DSE Portfolio
+        </div>
+        <ul class="nav-links">
+            <li><button class="active" data-page="dashboard"><i class="fas fa-home"></i> Dashboard</button></li>
+            <li><button data-page="portfolio"><i class="fas fa-coins"></i> Portfolio</button></li>
+            <li><button data-page="moat"><i class="fas fa-shield-alt"></i> MOAT Analysis</button></li>
+            <li><button data-page="settings"><i class="fas fa-sliders-h"></i> Settings</button></li>
+        </ul>
+    </nav>
+
+    <!-- ===== MAIN CONTAINER ===== -->
+    <div class="container">
+
+        <!-- ============================================ -->
+        <!-- PAGE: DASHBOARD                              -->
+        <!-- ============================================ -->
+        <div id="dashboard" class="page active">
+
+            <!-- Stats Row -->
+            <div class="grid-3" style="margin-bottom:2rem;">
+                <div class="stat-card">
+                    <div class="label">Total Portfolio Value</div>
+                    <div class="value" id="totalValue">TZS 0</div>
+                    <div class="change positive">▲ +5.2% this month</div>
+                </div>
+                <div class="stat-card" style="border-color:var(--success);">
+                    <div class="label">Total Invested</div>
+                    <div class="value" id="totalInvested">TZS 0</div>
+                    <div class="change">Target: TZS 50,000,000</div>
+                </div>
+                <div class="stat-card" style="border-color:var(--accent);">
+                    <div class="label">Overall Return</div>
+                    <div class="value" id="totalReturn">TZS 0</div>
+                    <div class="change positive">▲ +2.4%</div>
+                </div>
+            </div>
+
+            <!-- Charts Row -->
+            <div class="grid-2">
+                <div class="card">
+                    <h2><i class="fas fa-chart-pie"></i> Asset Allocation</h2>
+                    <div style="position:relative; height:300px;">
+                        <canvas id="allocationChart"></canvas>
+                    </div>
+                </div>
+                <div class="card">
+                    <h2><i class="fas fa-bullseye"></i> Target vs Current</h2>
+                    <div style="position:relative; height:300px;">
+                        <canvas id="targetChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recommendations -->
+            <div class="card">
+                <h2><i class="fas fa-lightbulb"></i> Recommendations</h2>
+                <div id="recommendations">
+                    <p style="color:var(--text-light);">No active recommendations. Portfolio is balanced.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- ============================================ -->
+        <!-- PAGE: PORTFOLIO                             -->
+        <!-- ============================================ -->
+        <div id="portfolio" class="page">
+
+            <!-- Add Holding Form -->
+            <div class="card">
+                <h2><i class="fas fa-plus-circle"></i> Add Holding</h2>
+                <form id="addHoldingForm">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Ticker / Asset</label>
+                            <select id="holdingTicker" required>
+                                <option value="">Select Asset...</option>
+                                <option value="CRDB">CRDB Bank Plc</option>
+                                <option value="NMB">National Microfinance Bank</option>
+                                <option value="TBL">Tanzania Breweries</option>
+                                <option value="TWIGA">Tanzania Portland Cement</option>
+                                <option value="VODA">Vodacom Tanzania</option>
+                                <option value="DSE">DSE Plc</option>
+                                <option value="GOVT-BOND">20-Yr Govt Bond</option>
+                                <option value="UTT-AMIS">UTT AMIS Money Market</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Asset Class</label>
+                            <select id="holdingClass" required>
+                                <option value="Equities">Equities</option>
+                                <option value="Fixed Income">Fixed Income</option>
+                                <option value="Cash & Money Market">Cash & Money Market</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Quantity / Units</label>
+                            <input type="number" id="holdingQuantity" placeholder="e.g., 10000" required />
+                        </div>
+                        <div class="form-group">
+                            <label>Purchase Price (TZS)</label>
+                            <input type="number" id="holdingPrice" placeholder="e.g., 550" required />
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Fees & Taxes (TZS)</label>
+                            <input type="number" id="holdingFees" placeholder="e.g., 55000" value="0" />
+                        </div>
+                        <div class="form-group">
+                            <label>Purchase Date</label>
+                            <input type="date" id="holdingDate" required />
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-plus"></i> Add Holding
+                    </button>
+                </form>
+            </div>
+
+            <!-- Holdings Table -->
+            <div class="card">
+                <h2><i class="fas fa-list"></i> Current Holdings</h2>
+                <div class="table-wrapper">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Asset</th>
+                                <th>Class</th>
+                                <th>Qty</th>
+                                <th>Cost</th>
+                                <th>Current</th>
+                                <th>Gain/Loss</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="holdingsTableBody">
+                            <!-- Rows inserted by JavaScript -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- ============================================ -->
+        <!-- PAGE: MOAT ANALYSIS                         -->
+        <!-- ============================================ -->
+        <div id="moat" class="page">
+
+            <!-- Company Selector -->
+            <div class="card">
+                <h2><i class="fas fa-search"></i> Select Company</h2>
+                <div style="display:flex; gap:1rem; flex-wrap:wrap;">
+                    <div style="flex:1; min-width:200px;">
+                        <select id="moatCompany" style="width:100%; padding:0.7rem; border-radius:10px; border:2px solid #e5e7eb;">
+                            <option value="">Select a DSE-listed company...</option>
+                            <option value="CRDB">CRDB Bank Plc</option>
+                            <option value="NMB">NMB Bank Plc</option>
+                            <option value="TBL">Tanzania Breweries</option>
+                            <option value="TWIGA">Tanzania Portland Cement</option>
+                            <option value="VODA">Vodacom Tanzania</option>
+                            <option value="TCC">Tanzania Cigarette Co.</option>
+                            <option value="KCB">Kenya Commercial Bank</option>
+                            <option value="DSE">DSE Plc</option>
+                        </select>
+                    </div>
+                    <button class="btn btn-primary" onclick="loadMOAT()">
+                        <i class="fas fa-file-alt"></i> Load Analysis
+                    </button>
+                    <button class="btn btn-success" onclick="saveMOAT()">
+                        <i class="fas fa-save"></i> Save Analysis
+                    </button>
+                </div>
+            </div>
+
+            <!-- Score Summary -->
+            <div class="grid-3" id="moatScores" style="display:none;">
+                <div class="stat-card"><div class="label">Management</div><div class="value" id="scoreMgmt">0</div></div>
+                <div class="stat-card" style="border-color:var(--success);"><div class="label">Financial Strength</div><div class="value" id="scoreFinancial">0</div></div>
+                <div class="stat-card" style="border-color:var(--accent);"><div class="label">Growth Potential</div><div class="value" id="scoreGrowth">0</div></div>
+                <div class="stat-card" style="border-color:#7c4dff;"><div class="label">Competitive Moat</div><div class="value" id="scoreMoat">0</div></div>
+                <div class="stat-card" style="border-color:#ff6f00;"><div class="label">Valuation</div><div class="value" id="scoreValuation">0</div></div>
+                <div class="stat-card" style="border-color:var(--danger);"><div class="label">Risk Assessment</div><div class="value" id="scoreRisk">0</div></div>
+            </div>
+
+            <!-- Overall Recommendation -->
+            <div class="card" id="moatRecommendation" style="display:none; text-align:center; padding:2rem;">
+                <h2 style="font-size:2rem; margin-bottom:0.5rem;" id="moatOverallScore">0%</h2>
+                <div style="font-size:1.2rem; font-weight:600;" id="moatOverallLabel">Loading...</div>
+                <p style="color:var(--text-light); margin-top:0.5rem;" id="moatOverallDesc">Complete the checklist below for a detailed analysis</p>
+            </div>
+
+            <!-- MOAT Checklist -->
+            <div id="moatChecklist">
+                <!-- Sections injected by JavaScript -->
+            </div>
+        </div>
+
+        <!-- ============================================ -->
+        <!-- PAGE: SETTINGS                              -->
+        <!-- ============================================ -->
+        <div id="settings" class="page">
+
+            <div class="card">
+                <h2><i class="fas fa-user-cog"></i> Investor Profile</h2>
+                <form id="settingsForm">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Investor Name</label>
+                            <input type="text" id="investorName" value="Enter Client Name" />
+                        </div>
+                        <div class="form-group">
+                            <label>Nature of Investor</label>
+                            <select id="investorType">
+                                <option value="Savings Group">Savings Group</option>
+                                <option value="Individual">Individual</option>
+                                <option value="Pension Fund">Pension Fund</option>
+                                <option value="Corporate">Corporate</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Risk Tolerance</label>
+                            <select id="riskTolerance">
+                                <option value="Conservative">Conservative</option>
+                                <option value="Moderate" selected>Moderate</option>
+                                <option value="Aggressive">Aggressive</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Management Approach</label>
+                            <select id="managementApproach">
+                                <option value="Strategic">Strategic</option>
+                                <option value="Tactical">Tactical</option>
+                                <option value="Passive">Passive</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Total Target Investment (TZS)</label>
+                        <input type="number" id="targetInvestment" value="50000000" />
+                    </div>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save"></i> Save Settings
+                    </button>
+                </form>
+            </div>
+
+            <!-- Asset Allocation Rules -->
+            <div class="card">
+                <h2><i class="fas fa-chart-simple"></i> Asset Allocation Rules</h2>
+                <p style="color:var(--text-light); margin-bottom:1rem;">
+                    Based on your selected risk tolerance, these are the target allocations:
+                </p>
+                <div id="allocationRules">
+                    <!-- Injected by JavaScript -->
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- ============================================ -->
+    <!-- JAVASCRIPT                                   -->
+    <!-- ============================================ -->
+    <script>
+        // ============================================================
+        // DATA
+        // ============================================================
+
+        // Risk profiles
+        const RISK_PROFILES = {
+            Conservative: { Equities: 0.15, 'Fixed Income': 0.60, 'Cash & Money Market': 0.25 },
+            Moderate: { Equities: 0.35, 'Fixed Income': 0.45, 'Cash & Money Market': 0.20 },
+            Aggressive: { Equities: 0.65, 'Fixed Income': 0.25, 'Cash & Money Market': 0.10 }
+        };
+
+        // Price data (from Data Engine)
+        const PRICE_DATA = {
+            CRDB: 610,
+            NMB: 4800,
+            TBL: 10000,
+            TWIGA: 4100,
+            VODA: 750,
+            DSE: 1000,
+            'GOVT-BOND': 1000000,
+            'UTT-AMIS': 1,
+            TCC: 1000,
+            KCB: 1000,
+            ACA: 1000,
+            DCB: 1000,
+            EABL: 1000,
+            JATU: 1000,
+            JHL: 1000,
+            KQ: 1000,
+            MKCB: 1000,
+            MUCOBA: 1000,
+            MBP: 1000,
+            NICL: 1000,
+            NMG: 1000,
+            PAL: 1000,
+            SWIS: 1000,
+            TATEPA: 1000,
+            TICL: 1000,
+            TOL: 1000,
+            TCPL: 1000,
+            UCHU: 1000,
+            YETU: 1000
+        };
+
+        // ============================================================
+        // STATE
+        // ============================================================
+
+        let state = {
+            holdings: [],
+            settings: {
+                investorName: 'Enter Client Name',
+                investorType: 'Savings Group',
+                riskTolerance: 'Moderate',
+                managementApproach: 'Strategic',
+                targetInvestment: 50000000
+            },
+            moatData: {}
+        };
+
+        // ============================================================
+        // LOCAL STORAGE
+        // ============================================================
+
+        function saveState() {
+            try {
+                localStorage.setItem('dsePortfolio', JSON.stringify(state));
+            } catch (e) { console.warn('Could not save state'); }
+        }
+
+        function loadState() {
+            try {
+                const saved = localStorage.getItem('dsePortfolio');
+                if (saved) {
+                    const parsed = JSON.parse(saved);
+                    state = parsed;
+                }
+            } catch (e) { console.warn('Could not load state'); }
+        }
+
+        // ============================================================
+        // NAVIGATION
+        // ============================================================
+
+        document.querySelectorAll('.nav-links button').forEach(btn => {
+            btn.addEventListener('click', function() {
+                // Update active button
+                document.querySelectorAll('.nav-links button').forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+
+                // Show page
+                const pageId = this.dataset.page;
+                document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+                document.getElementById(pageId).classList.add('active');
+
+                // Refresh charts if dashboard
+                if (pageId === 'dashboard') {
+                    updateDashboard();
+                }
+                if (pageId === 'portfolio') {
+                    renderHoldings();
+                }
+                if (pageId === 'settings') {
+                    loadSettings();
+                    renderAllocationRules();
+                }
+            });
+        });
+
+        // ============================================================
+        // DASHBOARD
+        // ============================================================
+
+        function updateDashboard() {
+            const holdings = state.holdings || [];
+            const settings = state.settings || {};
+
+            // Calculate totals
+            let totalValue = 0;
+            let totalInvested = 0;
+            let totalReturn = 0;
+
+            holdings.forEach(h => {
+                const currentPrice = PRICE_DATA[h.ticker] || h.price || 0;
+                const currentValue = h.quantity * currentPrice;
+                const cost = h.quantity * h.price + (h.fees || 0);
+                totalValue += currentValue;
+                totalInvested += cost;
+                totalReturn += (currentValue - cost);
+            });
+
+            document.getElementById('totalValue').textContent = 'TZS ' + totalValue.toLocaleString();
+            document.getElementById('totalInvested').textContent = 'TZS ' + totalInvested.toLocaleString();
+            document.getElementById('totalReturn').textContent = 'TZS ' + totalReturn.toLocaleString();
+
+            // Allocation chart
+            renderAllocationChart(holdings);
+            renderTargetChart(holdings);
+            renderRecommendations(holdings);
+        }
+
+        function renderAllocationChart(holdings) {
+            const ctx = document.getElementById('allocationChart');
+            if (!ctx) return;
+
+            // Group by asset class
+            const classes = {};
+            holdings.forEach(h => {
+                const cls = h.assetClass || 'Equities';
+                const price = PRICE_DATA[h.ticker] || h.price || 0;
+                const value = h.quantity * price;
+                classes[cls] = (classes[cls] || 0) + value;
+            });
+
+            const labels = Object.keys(classes);
+            const data = Object.values(classes);
+            const colors = ['#3949ab', '#43a047', '#fb8c00'];
+
+            if (window.allocationChartInstance) {
+                window.allocationChartInstance.destroy();
+            }
+
+            window.allocationChartInstance = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        data: data,
+                        backgroundColor: colors.slice(0, labels.length),
+                        borderWidth: 2,
+                        borderColor: '#fff'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom'
+                        }
+                    }
+                }
+            });
+        }
+
+        function renderTargetChart(holdings) {
+            const ctx = document.getElementById('targetChart');
+            if (!ctx) return;
+
+            const settings = state.settings || {};
+            const riskProfile = settings.riskTolerance || 'Moderate';
+            const targetAlloc = RISK_PROFILES[riskProfile] || RISK_PROFILES.Moderate;
+
+            // Current allocation
+            const currentAlloc = {};
+            let totalValue = 0;
+            holdings.forEach(h => {
+                const price = PRICE_DATA[h.ticker] || h.price || 0;
+                const value = h.quantity * price;
+                totalValue += value;
+                const cls = h.assetClass || 'Equities';
+                currentAlloc[cls] = (currentAlloc[cls] || 0) + value;
+            });
+
+            const assetClasses = ['Equities', 'Fixed Income', 'Cash & Money Market'];
+            const currentPcts = assetClasses.map(cls => ((currentAlloc[cls] || 0) / (totalValue || 1)) * 100);
+            const targetPcts = assetClasses.map(cls => (targetAlloc[cls] || 0) * 100);
+
+            if (window.targetChartInstance) {
+                window.targetChartInstance.destroy();
+            }
+
+            window.targetChartInstance = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: assetClasses,
+                    datasets: [{
+                        label: 'Current Allocation %',
+                        data: currentPcts,
+                        backgroundColor: 'rgba(57, 73, 171, 0.7)',
+                        borderColor: '#3949ab',
+                        borderWidth: 2
+                    }, {
+                        label: 'Target Allocation %',
+                        data: targetPcts,
+                        backgroundColor: 'rgba(67, 160, 71, 0.7)',
+                        borderColor: '#43a047',
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'top'
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 100,
+                            ticks: {
+                                callback: function(value) { return value + '%'; }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function renderRecommendations(holdings) {
+            const container = document.getElementById('recommendations');
+            const settings = state.settings || {};
+            const riskProfile = settings.riskTolerance || 'Moderate';
+            const targetAlloc = RISK_PROFILES[riskProfile] || RISK_PROFILES.Moderate;
+
+            // Calculate current allocation
+            const currentAlloc = {};
+            let totalValue = 0;
+            holdings.forEach(h => {
+                const price = PRICE_DATA[h.ticker] || h.price || 0;
+                const value = h.quantity * price;
+                totalValue += value;
+                const cls = h.assetClass || 'Equities';
+                currentAlloc[cls] = (currentAlloc[cls] || 0) + value;
+            });
+
+            const assetClasses = ['Equities', 'Fixed Income', 'Cash & Money Market'];
+            let recommendations = [];
+
+            assetClasses.forEach(cls => {
+                const currentPct = ((currentAlloc[cls] || 0) / (totalValue || 1));
+                const targetPct = targetAlloc[cls] || 0;
+                const drift = currentPct - targetPct;
+
+                if (Math.abs(drift) > 0.05) {
+                    const action = drift > 0 ? 'Reduce' : 'Increase';
+                    const amount = Math.abs(drift * (totalValue || 1));
+                    recommendations.push({
+                        class: cls,
+                        action: action,
+                        amount: amount,
+                        drift: (drift * 100).toFixed(1)
+                    });
+                }
+            });
+
+            if (recommendations.length === 0) {
+                container.innerHTML =
+                    `<div style="display:flex; align-items:center; gap:10px; color:var(--success);">
+                            <i class="fas fa-check-circle" style="font-size:1.5rem;"></i>
+                            <span>Portfolio is well balanced! No rebalancing needed.</span>
+                        </div>`;
+                return;
+            }
+
+            let html = '<ul style="list-style:none; display:flex; flex-direction:column; gap:10px;">';
+            recommendations.forEach(rec => {
+                const color = rec.action === 'Reduce' ? 'var(--danger)' : 'var(--success)';
+                const icon = rec.action === 'Reduce' ? 'fa-arrow-down' : 'fa-arrow-up';
+                html += `
+                        <li style="display:flex; align-items:center; gap:12px; padding:12px 16px; 
+                                   background:${rec.action === 'Reduce' ? '#ffebee' : '#e8f5e9'}; 
+                                   border-radius:10px; border-left:4px solid ${color};">
+                            <i class="fas ${icon}" style="color:${color};"></i>
+                            <span><strong>${rec.action}</strong> ${rec.class}: 
+                                <strong>TZS ${Math.round(rec.amount).toLocaleString()}</strong> 
+                                (Drift: ${rec.drift}%)</span>
+                        </li>
+                    `;
+            });
+            html += '</ul>';
+            container.innerHTML = html;
+        }
+
+        // ============================================================
+        // PORTFOLIO
+        // ============================================================
+
+        function renderHoldings() {
+            const tbody = document.getElementById('holdingsTableBody');
+            const holdings = state.holdings || [];
+
+            if (holdings.length === 0) {
+                tbody.innerHTML =
+                    `<tr><td colspan="8" style="text-align:center; color:var(--text-light); padding:2rem;">
+                                No holdings yet. Add your first investment above!
+                            </td></tr>`;
+                return;
+            }
+
+            let html = '';
+            holdings.forEach((h, index) => {
+                const currentPrice = PRICE_DATA[h.ticker] || h.price || 0;
+                const currentValue = h.quantity * currentPrice;
+                const cost = h.quantity * h.price + (h.fees || 0);
+                const gain = currentValue - cost;
+                const gainPct = cost > 0 ? (gain / cost * 100) : 0;
+
+                const gainClass = gain >= 0 ? 'positive' : 'negative';
+                const gainIcon = gain >= 0 ? '▲' : '▼';
+
+                html += `
+                        <tr>
+                            <td>${h.date || 'N/A'}</td>
+                            <td><strong>${h.ticker}</strong></td>
+                            <td>${h.assetClass || 'N/A'}</td>
+                            <td>${h.quantity}</td>
+                            <td>TZS ${cost.toLocaleString()}</td>
+                            <td>TZS ${currentValue.toLocaleString()}</td>
+                            <td class="${gainClass}">
+                                ${gainIcon} TZS ${Math.abs(gain).toLocaleString()} 
+                                (${gainPct.toFixed(1)}%)
+                            </td>
+                            <td>
+                                <button class="btn btn-danger" style="padding:0.3rem 0.8rem; font-size:0.8rem;" 
+                                        onclick="deleteHolding(${index})">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </td>
+                        </tr>
+                    `;
+            });
+
+            tbody.innerHTML = html;
+        }
+
+        function deleteHolding(index) {
+            if (confirm('Remove this holding?')) {
+                state.holdings.splice(index, 1);
+                saveState();
+                renderHoldings();
+                updateDashboard();
+            }
+        }
+
+        // Add holding form
+        document.getElementById('addHoldingForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            const holding = {
+                ticker: document.getElementById('holdingTicker').value,
+                assetClass: document.getElementById('holdingClass').value,
+                quantity: parseFloat(document.getElementById('holdingQuantity').value),
+                price: parseFloat(document.getElementById('holdingPrice').value),
+                fees: parseFloat(document.getElementById('holdingFees').value) || 0,
+                date: document.getElementById('holdingDate').value || new Date().toISOString().split('T')[0]
+            };
+
+            if (!holding.ticker || !holding.quantity || !holding.price) {
+                alert('Please fill in all required fields');
+                return;
+            }
+
+            state.holdings.push(holding);
+            saveState();
+            renderHoldings();
+            updateDashboard();
+
+            // Reset form
+            this.reset();
+            document.getElementById('holdingFees').value = '0';
+
+            // Switch to dashboard to see changes
+            document.querySelector('[data-page="dashboard"]').click();
+        });
+
+        // ============================================================
+        // MOAT ANALYSIS
+        // ============================================================
+
+        const MOAT_SECTIONS = [{
+            id: 'management',
+            title: '1. Management & Insider Activity',
+            icon: 'fa-users',
+            questions: [
+                'Is the company founder-led? Founder-run companies tend to have stronger vision and execution.',
+                'Do insiders own a significant stake? Alignment with shareholders is crucial.',
+                'Have insiders recently bought stock? Insider buying is a strong bullish signal.',
+                'Have insiders sold, and if so, what is the ratio to their holdings? Frequent or large selling may be a red flag.',
+                'Does the CEO/founder have a long-term vision? The best CEOs think in decades, not quarters.',
+                'Does management have a track record of smart capital allocation? Look for reinvestment in growth rather than wasteful buybacks or dilution.'
+            ]
+        }, {
+            id: 'financial',
+            title: '2. Financial Strength & Stability',
+            icon: 'fa-chart-line',
+            questions: [
+                'Does the company generate positive free cash flow (FCF)? Cash is king.',
+                'Does the company have high Return on Capital (ROIC)? Aim for at least 15%+',
+                'Is the Debt/Cash ratio below 1? Excessive debt increases risk, especially in downturns.',
+                'Does it have a strong cash position? Cash reserves provide resilience and fuel for acquisitions.',
+                'Does the company require constant debt to grow? Low dependence on debt is ideal.',
+                'Are gross margins above 50%? High-margin businesses tend to have strong pricing power.',
+                'Does the company have an improving profit margin trend? Expanding margins indicate increasing efficiency.',
+                'Is stock dilution under control? Assess whether the company\'s use of ATM offerings—excessive dilution can erode shareholder value over time.',
+                'Are recent investments accretive? Check if acquisitions add value and positive sentiment.',
+                'Can the company meet short- and long-term obligations?'
+            ]
+        }, {
+            id: 'growth',
+            title: '3. Growth & Scalability',
+            icon: 'fa-rocket',
+            questions: [
+                'Can the stock 3X, 10X, or 100X? Look for a massive runway for growth.',
+                'Does the company reinvest profits into high-growth areas? Reinvestment is key to compounding returns.',
+                'Is the market cap under $10B? Smaller companies have more room to grow.',
+                'Does the company operate in an industry with strong tailwinds? Growth industries create more opportunities.',
+                'Is revenue growing at 15% or more per year? Sustainable revenue growth is a key sign of long-term success.',
+                'Has EPS (earnings per share) increased for eight or more quarters? Consistent earnings growth signals strong execution.',
+                'Does the company have a long runway for growth? Think in terms of decades, not just years.',
+                'Does it have pricing power? Can it raise prices without losing customers?',
+                'Are customers locked into the business model? Subscription-based revenue or high switching costs create stability.',
+                'What specific catalyst (operational change, regulatory shift) could unlock value? Trigger events that might prompt re-rating by the market?'
+            ]
+        }, {
+            id: 'moat',
+            title: '4. Competitive Advantage (Moat)',
+            icon: 'fa-shield-halved',
+            questions: [
+                'Does the company have a strong brand? Brand loyalty leads to pricing power and consistent sales.',
+                'Does it have a durable competitive advantage? Network effects (e.g., Visa, Facebook)',
+                'Cost Advantage (e.g., Amazon, Walmart)',
+                'High Switching Costs (e.g., Microsoft, Adobe)',
+                'Intangible Assets (e.g., patents, exclusive deals)',
+                'How does it compare to the competition? Higher margins, better growth, or stronger pricing power give an edge.',
+                'Who are its biggest competitors? A company without competitors may be in a weak market.',
+                'Does the company have a monopoly or duopoly? Market dominance increases pricing power and profitability.'
+            ]
+        }, {
+            id: 'valuation',
+            title: '5. Valuation (Is It Undervalued?)',
+            icon: 'fa-tags',
+            questions: [
+                'Is the stock trading at a discount to intrinsic value? DCF, DDM, Buying undervalued stocks increases potential returns.',
+                'Is the PE ratio discounted compared to the industry average? A lower PE relative to peers can indicate an opportunity.',
+                'Is the Earnings Yield (EBIT/EV) high? Higher earnings yield signals undervaluation.',
+                'Is the company undervalued relative to future growth (PEG < 1.0)? A PEG ratio below one suggests a stock is cheap for its growth rate.',
+                'Has the company been punished due to short-term volatility? Market overreactions can create buying opportunities.',
+                'What is the negative news? Determine if it is a short-term issue or a fundamental problem.'
+            ]
+        }, {
+            id: 'risk',
+            title: '6. Red Flags & Risk Management',
+            icon: 'fa-triangle-exclamation',
+            questions: [
+                'Does the company have a history of shareholder dilution? Excessive dilution reduces the value of existing shares.',
+                'Has the company consistently beaten or met earnings expectations? Repeated earnings misses can be a warning sign.',
+                'Is it too reliant on one product or revenue source? Diversified revenue streams provide stability.',
+                'Is it at risk of technological disruption? Companies like Kodak and Blockbuster were destroyed by innovation.',
+                'Has management made poor acquisitions? Bad acquisitions can destroy shareholder value.',
+                'What is the downside risk? Always consider the worst-case scenario.',
+                'Would I still buy more if the stock drops? If not, reconsider the investment.',
+                'Has the company had any short reports? Outcomes? When?'
+            ]
+        }];
+
+        function renderMOATChecklist() {
+            const container = document.getElementById('moatChecklist');
+            const company = document.getElementById('moatCompany').value;
+
+            if (!company) {
+                container.innerHTML =
+                    `<div style="text-align:center; padding:3rem; color:var(--text-light);">
+                            <i class="fas fa-hand-point-up" style="font-size:3rem; display:block; margin-bottom:1rem;"></i>
+                            <p>Select a company above to start the MOAT analysis</p>
+                        </div>`;
+                return;
+            }
+
+            let html = '';
+            MOAT_SECTIONS.forEach((section, idx) => {
+                const saved = state.moatData[company]?.[section.id] || [];
+                html += `
+                        <div class="moat-section">
+                            <div class="moat-section-header" onclick="toggleMOATSection(this)">
+                                <span><i class="fas ${section.icon}"></i> ${section.title}</span>
+                                <span id="score_${section.id}">${calculateSectionScore(saved, section.questions.length)}%</span>
+                            </div>
+                            <div class="moat-section-body open">
+                                ${section.questions.map((q, qi) => `
+                                    <div class="checkbox-item">
+                                        <input type="checkbox" id="moat_${section.id}_${qi}" 
+                                               ${saved[qi] ? 'checked' : ''}
+                                               onchange="updateMOATScore('${section.id}', ${qi})" />
+                                        <label for="moat_${section.id}_${qi}">
+                                            ${q}
+                                            <span class="sub-text">Check if this applies</span>
+                                        </label>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
+                    `;
+            });
+
+            container.innerHTML = html;
+        }
+
+        function toggleMOATSection(header) {
+            const body = header.nextElementSibling;
+            body.classList.toggle('open');
+            const icon = header.querySelector('i.fa-chevron-down, i.fa-chevron-up');
+            if (icon) {
+                icon.className = body.classList.contains('open') ? 'fas fa-chevron-up' : 'fas fa-chevron-down';
+            } else {
+                // Add icon if not exists
+                const chevron = document.createElement('i');
+                chevron.className = body.classList.contains('open') ? 'fas fa-chevron-up' : 'fas fa-chevron-down';
+                header.appendChild(chevron);
+            }
+        }
+
+        function calculateSectionScore(checked, total) {
+            if (!checked || total === 0) return 0;
+            const score = (checked.filter(v => v).length / total) * 100;
+            return Math.round(score);
+        }
+
+        function updateMOATScore(sectionId, questionIndex) {
+            const company = document.getElementById('moatCompany').value;
+            if (!company) return;
+
+            if (!state.moatData[company]) {
+                state.moatData[company] = {};
+            }
+            if (!state.moatData[company][sectionId]) {
+                const section = MOAT_SECTIONS.find(s => s.id === sectionId);
+                state.moatData[company][sectionId] = new Array(section.questions.length).fill(false);
+            }
+
+            const checkbox = document.getElementById(`moat_${sectionId}_${questionIndex}`);
+            state.moatData[company][sectionId][questionIndex] = checkbox.checked;
+
+            // Update score
+            const section = MOAT_SECTIONS.find(s => s.id === sectionId);
+            const score = calculateSectionScore(state.moatData[company][sectionId], section.questions.length);
+            const scoreEl = document.getElementById(`score_${sectionId}`);
+            if (scoreEl) {
+                scoreEl.textContent = score + '%';
+            }
+
+            // Update overall
+            updateMOATOverall(company);
+            saveState();
+        }
+
+        function updateMOATOverall(company) {
+            const data = state.moatData[company];
+            if (!data) return;
+
+            let total = 0;
+            let count = 0;
+            MOAT_SECTIONS.forEach(section => {
+                const answers = data[section.id] || [];
+                total += answers.filter(v => v).length;
+                count += section.questions.length;
+            });
+
+            const overallPct = count > 0 ? Math.round((total / count) * 100) : 0;
+            const overallEl = document.getElementById('moatOverallScore');
+            const labelEl = document.getElementById('moatOverallLabel');
+            const descEl = document.getElementById('moatOverallDesc');
+
+            if (overallEl) overallEl.textContent = overallPct + '%';
+
+            let label, desc, color;
+            if (overallPct >= 80) {
+                label = '🌟 Strong Buy';
+                desc = 'Exceptional company across all metrics. Strong conviction to invest.';
+                color = 'var(--success)';
+            } else if (overallPct >= 60) {
+                label = '👍 Buy';
+                desc = 'Good fundamentals with some areas for improvement. Worth investing.';
+                color = 'var(--primary-light)';
+            } else if (overallPct >= 40) {
+                label = '⏳ Hold / Further Research';
+                desc = 'Mixed signals. Need deeper analysis before investing.';
+                color = 'var(--warning)';
+            } else {
+                label = '❌ Avoid / Sell';
+                desc = 'Significant red flags. Not recommended for investment.';
+                color = 'var(--danger)';
+            }
+
+            if (labelEl) {
+                labelEl.textContent = label;
+                labelEl.style.color = color;
+            }
+            if (descEl) descEl.textContent = desc;
+
+            // Show scores and recommendation
+            document.getElementById('moatScores').style.display = 'grid';
+            document.getElementById('moatRecommendation').style.display = 'block';
+
+            // Update individual scores
+            MOAT_SECTIONS.forEach(section => {
+                const answers = data[section.id] || [];
+                const score = calculateSectionScore(answers, section.questions.length);
+                const el = document.getElementById(`scoreMgmt`);
+                // Map section IDs to element IDs
+                const map = {
+                    management: 'scoreMgmt',
+                    financial: 'scoreFinancial',
+                    growth: 'scoreGrowth',
+                    moat: 'scoreMoat',
+                    valuation: 'scoreValuation',
+                    risk: 'scoreRisk'
+                };
+                const target = document.getElementById(map[section.id]);
+                if (target) {
+                    target.textContent = score + '%';
+                    // Color coding
+                    target.style.color = score >= 70 ? 'var(--success)' :
+                        score >= 40 ? 'var(--warning)' : 'var(--danger)';
+                }
+            });
+        }
+
+        function loadMOAT() {
+            renderMOATChecklist();
+            const company = document.getElementById('moatCompany').value;
+            if (company) {
+                updateMOATOverall(company);
+            }
+        }
+
+        function saveMOAT() {
+            const company = document.getElementById('moatCompany').value;
+            if (!company) {
+                alert('Please select a company first');
+                return;
+            }
+            saveState();
+            alert(`MOAT analysis for ${company} saved successfully!`);
+        }
+
+        // ============================================================
+        // SETTINGS
+        // ============================================================
+
+        function loadSettings() {
+            const settings = state.settings || {};
+            document.getElementById('investorName').value = settings.investorName || '';
+            document.getElementById('investorType').value = settings.investorType || 'Savings Group';
+            document.getElementById('riskTolerance').value = settings.riskTolerance || 'Moderate';
+            document.getElementById('managementApproach').value = settings.managementApproach || 'Strategic';
+            document.getElementById('targetInvestment').value = settings.targetInvestment || 50000000;
+        }
+
+        function renderAllocationRules() {
+            const container = document.getElementById('allocationRules');
+            const risk = document.getElementById('riskTolerance').value || 'Moderate';
+            const alloc = RISK_PROFILES[risk] || RISK_PROFILES.Moderate;
+
+            let html = '<div class="grid-3">';
+            for (const [cls, pct] of Object.entries(alloc)) {
+                const pctDisplay = (pct * 100).toFixed(0);
+                html += `
+                        <div style="background:#f8fafc; padding:1rem; border-radius:10px; text-align:center;">
+                            <div style="font-weight:600;">${cls}</div>
+                            <div style="font-size:2rem; font-weight:800; color:var(--primary);">${pctDisplay}%</div>
+                        </div>
+                    `;
+            }
+            html += '</div>';
+            container.innerHTML = html;
+        }
+
+        document.getElementById('settingsForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            state.settings = {
+                investorName: document.getElementById('investorName').value,
+                investorType: document.getElementById('investorType').value,
+                riskTolerance: document.getElementById('riskTolerance').value,
+                managementApproach: document.getElementById('managementApproach').value,
+                targetInvestment: parseFloat(document.getElementById('targetInvestment').value) || 0
+            };
+
+            saveState();
+            renderAllocationRules();
+            alert('Settings saved!');
+
+            // Update dashboard
+            document.querySelector('[data-page="dashboard"]').click();
+        });
+
+        // Risk tolerance change updates allocation rules
+        document.getElementById('riskTolerance').addEventListener('change', renderAllocationRules);
+
+        // ============================================================
+        // INIT
+        // ============================================================
+
+        loadState();
+        renderHoldings();
+        updateDashboard();
+        loadSettings();
+        renderAllocationRules();
+
+        // Initialize MOAT with first load
+        setTimeout(() => {
+            renderMOATChecklist();
+        }, 100);
+
+        console.log('🚀 DSE Portfolio Management Platform loaded!');
+        console.log('📊 State:', state);
+    </script>
+</body>
+</html>
